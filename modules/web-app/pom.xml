@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.example.fiap-architect-burgers</groupId>
+        <artifactId>svc-engine-parent</artifactId>
+        <version>${projectVersion}</version>
+	<relativePath>../../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>svc-engine-webapi</artifactId>
+    <version>${project.parent.version}</version>
+
+    <name>svc-engine-webapi</name>
+    <description>Architect Burger - engine Microservice backend app</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>svc-engine-usecases</artifactId>
+            <!-- <version>${parent.version}</version> -->
+	    <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>svc-engine-gateways</artifactId>
+            <!-- <version>${parent.version}</version> -->
+	    <version>${project.parent.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>0.12.6</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>0.12.6</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId> <!-- or jjwt-gson if Gson is preferred -->
+            <version>0.12.6</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>2.5.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.zxing</groupId>
+            <artifactId>core</artifactId>
+            <version>3.3.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20240303</version>
+        </dependency>
+
+    </dependencies>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <!-- Import dependency management from Spring Boot -->
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${deps.spring.boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <plugins>
+ <!--           <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+-->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <skip>false</skip>
+                    <mainClass>com.example.fiap.videoslice.VideoSliceApiApplication</mainClass>
+
+                    <jvmArguments>-agentlib:jdwp=transport=dt_socket,server=y,address=8008,suspend=n</jvmArguments>
+
+                    <environmentVariables>
+                        <videoslice.integration.sqs.sqsEndpoint>http://localhost:4566</videoslice.integration.sqs.sqsEndpoint>
+                        <videoslice.integration.sqs.videosToBeProcessedQueueName>videosToBeProcessed</videoslice.integration.sqs.videosToBeProcessedQueueName>
+                        <videoslice.integration.sqs.videosToBeProcessedQueueUrl>http://localhost:4566/000000000000/videosToBeProcessed</videoslice.integration.sqs.videosToBeProcessedQueueUrl>
+                        <videoslice.integration.sqs.videoStatusQueueName>videoStatus</videoslice.integration.sqs.videoStatusQueueName>
+                        <videoslice.integration.sqs.videoStatusQueueUrl>http://localhost:4566/000000000000/videoStatus</videoslice.integration.sqs.videoStatusQueueUrl>
+                    </environmentVariables>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <mainClass>com.example.fiap.videoslice.VideoSliceApiApplication</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
