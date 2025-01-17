@@ -21,13 +21,13 @@ import software.amazon.awssdk.services.sqs.model.Message;
 import java.util.List;
 
 @Service
-public class VideoToBeProcessedListenerAwsSQS {
-    private static final Logger LOGGER = LoggerFactory.getLogger(VideoToBeProcessedListenerAwsSQS.class);
+public class VideosToBeProcessedQueueListener {
+    private static final Logger LOGGER = LoggerFactory.getLogger(VideosToBeProcessedQueueListener.class);
     private final AwsSQSApi awsSQSApi;
     private final AwsS3Api awsS3Api;
     private VideoUseCases videoUseCases;
 
-    public VideoToBeProcessedListenerAwsSQS(AwsSQSApi awsSQSApi, AwsS3Api awsS3Api, VideoUseCases videoUseCases) {
+    public VideosToBeProcessedQueueListener(AwsSQSApi awsSQSApi, AwsS3Api awsS3Api, VideoUseCases videoUseCases) {
         this.awsSQSApi = awsSQSApi;
         this.awsS3Api = awsS3Api;
         this.videoUseCases = videoUseCases;
@@ -35,7 +35,7 @@ public class VideoToBeProcessedListenerAwsSQS {
 
     @Scheduled(fixedRate = 10000, initialDelay = 10000)
     public void processVideoQueueMessages() {
-        LOGGER.debug("VideoToBeProcessedListenerAwsSQS - processVideoQueueMessages");
+        LOGGER.debug("VideosToBeProcessedQueueListener - processVideoQueueMessages");
 
         String bucketName = awsS3Api.getBucketFullPath();
 
