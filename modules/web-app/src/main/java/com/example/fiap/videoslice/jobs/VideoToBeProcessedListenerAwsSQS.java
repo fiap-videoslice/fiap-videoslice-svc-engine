@@ -2,6 +2,7 @@ package com.example.fiap.videoslice.jobs;
 
 import com.example.fiap.videoslice.adapters.dto.VideoDto;
 import com.example.fiap.videoslice.adapters.messaging.AwsSQSApi;
+import com.example.fiap.videoslice.adapters.storage.AwsS3Api;
 import com.example.fiap.videoslice.domain.entities.Video;
 import com.example.fiap.videoslice.domain.exception.DomainArgumentException;
 import com.example.fiap.videoslice.domain.usecases.VideoUseCases;
@@ -23,11 +24,12 @@ import java.util.List;
 public class VideoToBeProcessedListenerAwsSQS {
     private static final Logger LOGGER = LoggerFactory.getLogger(VideoToBeProcessedListenerAwsSQS.class);
     private final AwsSQSApi awsSQSApi;
+    private final AwsS3Api awsS3Api;
     private VideoUseCases videoUseCases;
 
-    public VideoToBeProcessedListenerAwsSQS(AwsSQSApi awsSQSApi, VideoUseCases videoUseCases) {
-
+    public VideoToBeProcessedListenerAwsSQS(AwsSQSApi awsSQSApi, AwsS3Api awsS3Api, VideoUseCases videoUseCases) {
         this.awsSQSApi = awsSQSApi;
+        this.awsS3Api = awsS3Api;
         this.videoUseCases = videoUseCases;
     }
 
@@ -35,25 +37,28 @@ public class VideoToBeProcessedListenerAwsSQS {
     public void processVideoQueueMessages() {
         LOGGER.debug("VideoToBeProcessedListenerAwsSQS - processVideoQueueMessages");
 
+        String bucketName = awsS3Api.getBucketFullPath();
 
-//        try {
         List<Message> messages = awsSQSApi.receiveMessages(awsSQSApi.getVideosToBeProcessedQueueUrl());
-
 
         for (Message message : messages) {
             String messageBody = message.body();
             LOGGER.debug("Received message: " + messageBody);
-
 
             try {
                 ObjectMapper objectMapper = new ObjectMapper();
                 objectMapper.enable(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT);
                 objectMapper.registerModule(new JavaTimeModule());
 
-                // Deserializar o JSON para o objeto Pedido
                 VideoDto videoDto = objectMapper.readValue(messageBody, VideoDto.class);
+                String path = "";
 
-                Video videoEntity = Video.newVideo(videoDto.getId(), StatusVideo.TO_BE_PROCESSED, videoDto.getPath());
+                if (videoDto.getPath() != null && !videoDto.equals("") && videoDto.getPath().startsWith("input"))
+                    path = bucketName + "/" + videoDto.getPath();
+                else
+                    path = videoDto.getPath();
+
+                Video videoEntity = Video.newVideo(videoDto.getId(), StatusVideo.TO_BE_PROCESSED, path);
 
                 String confirmExecution = videoUseCases.executeVideoSlice(videoEntity, videoDto.getTimeFrame());
 
