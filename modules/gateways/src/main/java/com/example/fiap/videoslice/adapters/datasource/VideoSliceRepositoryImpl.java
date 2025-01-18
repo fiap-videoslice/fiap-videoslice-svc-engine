@@ -27,7 +27,7 @@ public class VideoSliceRepositoryImpl implements VideoDataSource {
             Path tempDir = Files.createTempDirectory("frames");
             Integer time = LocalDateTime.now().getNano();
 
-            String fileName = "frames_" + time + ".zip";
+            String fileName = "frames_id_" + video.getId() + "__" + time + ".zip";
 
             File file = new File(tempDir.toFile(), fileName);
             try (ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(file))) {

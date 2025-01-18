@@ -19,19 +19,8 @@ public class Video {
         this.path = path;
         this.framesFilePath = framesFilePath;
 
-        if (id == null) {
-            throw new DomainArgumentException("Video should contain id");
-        }
-        if (status == null) {
-            throw new DomainArgumentException("Video should contain status");
-        }
-        if (path == null) {
-            throw new DomainArgumentException("Video should contain path");
-        }
-
         isExtensionValid();
     }
-
 
     public static Video newVideo(@NotNull String id, @Nullable StatusVideo status, @NotNull String path) {
 
@@ -43,10 +32,6 @@ public class Video {
             throw new DomainArgumentException("Video should contain path");
         }
         return new Video(id, StatusVideo.TO_BE_PROCESSED, path, "");
-    }
-
-    public boolean isPathExists() {
-        return true;
     }
 
     public void isExtensionValid() {
@@ -94,6 +79,10 @@ public class Video {
 
     public String getPath() {
         return path;
+    }
+
+    public String getFramesFilePath() {
+        return framesFilePath;
     }
 
     @Override

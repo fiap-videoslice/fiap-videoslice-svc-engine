@@ -48,18 +48,6 @@ public class AwsS3Api implements VideoFileStoreDataSource {
 
         s3.putObject(putObjectRequest, file.toPath());
 
-//        Pattern pattern = Pattern.compile("(https://)");
-//        Matcher matcher = pattern.matcher(s3Endpoint);
-
-//        String framesFilePath;
-//
-//        if (matcher.find()) {
-//            framesFilePath = matcher.replaceFirst("$1" + bucketName + ".");
-//        } else {
-//            framesFilePath = s3Endpoint;
-//        }
-//        framesFilePath = framesFilePath + "/" + file.getName();
-
         String framesFilePath = getBucketFullPath() + "/" + file.getName();
         return framesFilePath;
     }

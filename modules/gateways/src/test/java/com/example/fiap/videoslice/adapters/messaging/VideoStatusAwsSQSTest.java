@@ -1,39 +1,55 @@
 package com.example.fiap.videoslice.adapters.messaging;
 
+import com.example.fiap.videoslice.domain.entities.Video;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
-public class VideoStatusAwsSQSTest {
+class VideoStatusAwsSQSTest {
 
-    private final AwsSQSApi awsSQSApi = Mockito.mock(AwsSQSApi.class);
+    @Mock
+    private AwsSQSApi awsSQSApi;
+
+    @InjectMocks
     private VideoStatusAwsSQS videoStatusAwsSQS;
 
     @BeforeEach
     void setUp() {
-        videoStatusAwsSQS = new VideoStatusAwsSQS(awsSQSApi);
+        MockitoAnnotations.openMocks(this);
     }
 
-//    @Test
-//    void notificarStatusPagamento() {
-//
-//        Integer id = 1;
-//        String name = "fileName";
-//        StatusVideo status = StatusVideo.TO_BE_PROCESSED;
-//        String path = "/tmp/fileName.mp4";
-//
-//       Video video = Video.newVideo(id, name, StatusVideo.TO_BE_PROCESSED, path);
-//
-//        when(awsSQSApi.getVideoStatusQueueName()).thenReturn("video-processed");
-//        when(awsSQSApi.getVideoStatusQueueUrl()).thenReturn("http://localhostxxx:8080");
-//
-//        videoStatusAwsSQS.updateStatusVideo(video);
-//        System.out.println(video.getVideoJson().toString());
-//        verify(awsSQSApi).sendMessage(any(), any(), eq(video.getVideoJson()));
-//    }
+    @Test
+    void testUpdateStatusVideo() {
+        // Arrange
+        Video video = mock(Video.class);
+        when(video.getVideoJson()).thenReturn("{\"id\":\"1\",\"status\":\"PROCESSED_OK\"}");
+        when(awsSQSApi.getVideoStatusQueueName()).thenReturn("videoStatusQueue");
+        when(awsSQSApi.getVideoStatusQueueUrl()).thenReturn("http://localhost:4566/000000000000/videoStatusQueue");
+
+        // Act
+        videoStatusAwsSQS.updateStatusVideo(video);
+
+        // Assert
+        verify(awsSQSApi, times(1)).sendMessage(anyString(), anyString(), eq("{\"id\":\"1\",\"status\":\"PROCESSED_OK\"}"));
+    }
+
+    @Test
+    void testNotifyErrorProcessingTheVideo() {
+        // Arrange
+        String errorMessage = "Error processing video";
+        when(awsSQSApi.getVideoStatusQueueName()).thenReturn("videoStatusQueue");
+        when(awsSQSApi.getVideoStatusQueueUrl()).thenReturn("http://localhost:4566/000000000000/videoStatusQueue");
+
+        // Act
+        videoStatusAwsSQS.notifyErrorProcessingTheVideo(errorMessage);
+
+        // Assert
+        verify(awsSQSApi, times(1)).sendMessage(anyString(), anyString(), eq(errorMessage));
+    }
 }
+

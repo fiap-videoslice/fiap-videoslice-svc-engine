@@ -13,7 +13,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class VideoStatusEventMessagingGatewayImplTest {
+public class VideoEventMessagingGatewayImplTest {
 
     private final VideoStatusEventMessaging videoEventMessaging = mock(VideoStatusEventMessaging.class);
     private VideoEventMessagingGatewayImpl videoEventMessagingGateway;
@@ -32,5 +32,17 @@ public class VideoStatusEventMessagingGatewayImplTest {
         videoEventMessagingGateway.updateStatusVideo(video);
         verify(videoEventMessaging).updateStatusVideo(any());
 
+    }
+
+    @Test
+    void testNotifyErrorProcessingTheVideo() {
+        // Arrange
+        String errorMessage = "Error processing video";
+
+        // Act
+        videoEventMessagingGateway.notifyErrorProcessingTheVideo(errorMessage);
+
+        // Assert
+        verify(videoEventMessaging, times(1)).notifyErrorProcessingTheVideo(errorMessage);
     }
 }
