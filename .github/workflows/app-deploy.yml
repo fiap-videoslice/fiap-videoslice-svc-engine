@@ -10,6 +10,8 @@ jobs:
   mvn-install-with-libs:
     runs-on: ubuntu-latest
     steps:
+      - name: Dummy
+        run: echo Disabled
       - name: Checkout
         uses: actions/checkout@v4
       - name: Set up JDK 21
@@ -21,9 +23,8 @@ jobs:
       - name: Maven Install and Copy libraries
         run: mvn install dependency:copy-dependencies
       - name: Prepare app directory
-        run: |
-          mkdir ./docker/temp_libs
-          cp ./modules/web-app/target/svc-engine-webapi-*.jar ./docker/temp_libs/
+        run: |           
+          cp ./modules/web-app/target/svc-engine-webapi-*.jar ./docker/temp_libs/ 
           cp ./modules/web-app/target/lib/* ./docker/temp_libs/
       - name: Archive app directory
         uses: actions/upload-artifact@v4
@@ -42,8 +43,11 @@ jobs:
     env:
       PROJECT_VERSION: ${{ needs.mvn-install-with-libs.outputs.project_version }}
     steps:
+      - name: Dummy
+        run: echo Disabled
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
@@ -61,7 +65,7 @@ jobs:
         with:
           context: ./docker
           push: true
-          tags: ${{ vars.DOCKERHUB_USERNAME }}/${{ vars.DOCKER_IMAGE_BASE_NAME }}:latest,${{ vars.DOCKERHUB_USERNAME }}/${{ vars.DOCKER_IMAGE_BASE_NAME }}:${{env.PROJECT_VERSION}}
+          tags: ${{ vars.DOCKERHUB_USERNAME }}/fiap-videoslice-svc-engine:latest,${{ vars.DOCKERHUB_USERNAME }}/fiap-videoslice-svc-engine:${{env.PROJECT_VERSION}}
 
   prepare-k8s-aws-dependencies:
     needs:
@@ -81,16 +85,38 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
 
+      - name: Create SQS Queue Videos To Be Processed
+        id: create-sqs-videos-tbp
+        run: ./deploy/utils/create-sqs-queue.sh ${{vars.VIDEOSLICE_VIDEOS_TO_BE_PROCESSED_QUEUE_NAME}} >> $GITHUB_OUTPUT
+      
+      - name: Create SQS Queue VIDEOS_STATUS
+        id: create-sqs-video-status
+        run: ./deploy/utils/create-sqs-queue.sh ${{vars.VIDEOSLICE_VIDEOS_STATUS_QUEUE_NAME}} >> $GITHUB_OUTPUT
+
       - name: Verify EKS cluster
         run: ./deploy/utils/check-cluster-status.sh ${{vars.EKS_CLUSTER_NAME}}
+
       - name: Get API Gateway info
         id: get-apigw-info
         run: ./deploy/utils/get-external-api-info.sh ${{vars.API_GATEWAY_NAME}} >> $GITHUB_OUTPUT
 
+      - name: Prepare AWS
+        run: |
+          cat ./deploy/k8s/app/aws-configs-template.yml \
+             | sed "s/{ACCESS_KEY_ID}/$(echo -n '${{secrets.AWS_ACCESS_KEY_ID}}' | tr -d '\n')/" \
+             | sed "s|{SECRET_ACCESS_KEY}|$(echo -n '${{secrets.AWS_SECRET_ACCESS_KEY}}' | tr -d '\n')|" \
+             | sed "s|{SESSION_TOKEN}|$(echo -n '${{secrets.AWS_SESSION_TOKEN}}' | tr -d '\n')|" \
+             | sed "s|{VIDEOSLICE_VIDEOS_TO_BE_PROCESSED_QUEUE_NAME}|$(echo -n '${{vars.VIDEOSLICE_VIDEOS_TO_BE_PROCESSED_QUEUE_NAME}}' | tr -d '\n')|" \
+             | sed "s|{VIDEOSLICE_VIDEOS_STATUS_QUEUE_NAME}|$(echo -n '${{vars.VIDEOSLICE_VIDEOS_STATUS_QUEUE_NAME}}' | tr -d '\n')|" \
+             | sed "s|{VIDEOSLICE_VIDEOS_TO_BE_PROCESSED_QUEUE_URL}|${{ steps.create-sqs-videos-tbp.outputs.QUEUE }}|" \
+             | sed "s|{VIDEOSLICE_VIDEOS_STATUS_QUEUE_URL}|${{ steps.create-sqs-video-status.outputs.QUEUE }}|" \
+             | sed "s|{SQS_ENDPOINT}|${{ steps.create-sqs-videos-tbp.outputs.SQS_ENDPOINT }}|" \
+             | sed "s/{REGION}/us-east-1/" > ./kube-aws-configs.yml
+
       - name: Update image in App Deployment
         run: |
           cat ./deploy/k8s/app/app-deployment.yml \
-            | sed "s|image: .*${{ vars.DOCKER_IMAGE_BASE_NAME }}.*$|image: ${{ vars.DOCKERHUB_USERNAME }}/${{ vars.DOCKER_IMAGE_BASE_NAME }}:${{env.PROJECT_VERSION}}|" > ./kube-app-deployment-updated.yml
+            | sed "s|image: .*fiap-videoslice-svc-engine.*$|image: ${{ vars.DOCKERHUB_USERNAME }}/fiap-videoslice-svc-engine:${{env.PROJECT_VERSION}}|" > ./kube-app-deployment-updated.yml
 
       - name: Upload kube artifacts
         uses: actions/upload-artifact@v4
@@ -100,8 +126,7 @@ jobs:
           retention-days: 1
 
   deploy-k8s:
-    needs:
-      - prepare-k8s-aws-dependencies
+    needs: prepare-k8s-aws-dependencies
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -122,6 +147,9 @@ jobs:
 
       - name: Configure kubectl
         run: aws eks update-kubeconfig --name ${{vars.EKS_CLUSTER_NAME}}
+
+      - name: Create AWS-Services ConfigMap
+        run: kubectl apply -f kube-aws-configs.yml
 
       - name: Create App Internal service
         run: kubectl apply -f deploy/k8s/app/app-service-internal.yml
