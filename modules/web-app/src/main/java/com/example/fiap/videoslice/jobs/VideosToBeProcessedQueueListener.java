@@ -67,10 +67,10 @@ public class VideosToBeProcessedQueueListener {
             VideoDto videoDto = objectMapper.readValue(messageBody, VideoDto.class);
             String path = "";
 
-            if (videoDto.getPath() != null && !videoDto.equals("") && videoDto.getPath().startsWith("input"))
+            //if (videoDto.getPath() != null && !videoDto.equals("") && videoDto.getPath().startsWith("input"))
                 path = bucketName + "/" + videoDto.getPath();
-            else
-                path = videoDto.getPath();
+            //else
+            //    path = videoDto.getPath();
 
             Video videoEntity = Video.newVideo(videoDto.getId(), StatusVideo.TO_BE_PROCESSED, path);
 

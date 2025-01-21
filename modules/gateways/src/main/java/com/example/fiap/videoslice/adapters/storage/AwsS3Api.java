@@ -1,5 +1,6 @@
 package com.example.fiap.videoslice.adapters.storage;
 
+import com.example.fiap.videoslice.adapters.messaging.AwsClientUtils;
 import com.example.fiap.videoslice.domain.exception.ApplicationException;
 import com.example.fiap.videoslice.domain.processor.VideoFileStoreDataSource;
 import org.slf4j.Logger;
@@ -7,8 +8,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
+import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.S3ClientBuilder;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Exception;
@@ -25,14 +28,23 @@ public class AwsS3Api implements VideoFileStoreDataSource {
 
     private String s3Endpoint;
     private String bucketName;
+    private S3Client s3Client;
 
     @Autowired
     public AwsS3Api(Environment environment) {
-        this.s3Endpoint = environment.getProperty("videoslice.integration.sqs.s3Endpoint");
+        this.s3Endpoint = environment.getProperty("videoslice.integration.s3.s3Endpoint");
         this.bucketName = environment.getProperty("videoslice.integration.s3.bucketName");
 
-        this.s3Endpoint = Objects.requireNonNull(s3Endpoint, "videoslice.integration.sqs.s3Endpoint not set");
+        this.s3Endpoint = Objects.requireNonNull(s3Endpoint, "videoslice.integration.s3.s3Endpoint not set");
         this.bucketName = Objects.requireNonNull(bucketName, "videoslice.integration.s3.bucketName not set");
+
+
+        S3ClientBuilder builder = S3Client.builder()
+                .region(Region.US_EAST_1);
+
+        builder = AwsClientUtils.maybeOverrideEndpoint(builder, environment);
+
+        s3Client = builder.build();
     }
 
     @Override
@@ -40,18 +52,28 @@ public class AwsS3Api implements VideoFileStoreDataSource {
         String framesFilePath;
 
         try {
-            S3Client s3 = S3Client.builder()
-                    .region(Region.of(Region.US_EAST_1.toString()))
-                    .endpointOverride(URI.create(s3Endpoint))
-//                .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKeyId, secretAccessKey)))
-                    .build();
 
-            PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-                    .bucket(bucketName)
-                    .key(file.getName())
-                    .build();
+            LOGGER.info("Saving file {} with {} bytes to bucket {}");
 
-            s3.putObject(putObjectRequest, file.toPath());
+            s3Client.putObject(
+                    PutObjectRequest.builder()
+                            .bucket(bucketName)
+                            .key(file.getName())
+                            .build(), file.toPath());
+
+
+//            S3Client s3 = S3Client.builder()
+//                    .region(Region.of(Region.US_EAST_1.toString()))
+////                    .endpointOverride(URI.create(s3Endpoint))
+////                .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKeyId, secretAccessKey)))
+//                    .build();
+//
+//            PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+//                    .bucket(bucketName)
+//                    .key(file.getName())
+//                    .build();
+//
+//            s3.putObject(putObjectRequest, file.toPath());
 
             framesFilePath = getBucketFullPath() + "/" + file.getName();
 
@@ -64,14 +86,19 @@ public class AwsS3Api implements VideoFileStoreDataSource {
 
     public String getBucketFullPath(){
 
-        Pattern pattern = Pattern.compile("(https://)");
-        Matcher matcher = pattern.matcher(s3Endpoint);
+        Pattern patternHttps = Pattern.compile("(https://)");
+        Matcher matcherHttps = patternHttps.matcher(s3Endpoint);
+
+        Pattern patternHttp = Pattern.compile("(http://)");
+        Matcher matcherHttp = patternHttp.matcher(s3Endpoint);
 
         String bucketFullPath;
 
-        if (matcher.find()) {
-            bucketFullPath = matcher.replaceFirst("$1" + bucketName + ".");
-        } else {
+        if (matcherHttps.find()) {
+            bucketFullPath = matcherHttps.replaceFirst("$1" + bucketName + ".");
+        } else if(matcherHttp.find()){
+            bucketFullPath = s3Endpoint + "/" + bucketName;
+        }else {
             bucketFullPath = s3Endpoint;
         }
 
