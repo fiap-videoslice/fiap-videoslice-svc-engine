@@ -1,6 +1,7 @@
 package com.example.fiap.videoslice.adapters.storage;
 
-import com.example.fiap.videoslice.domain.datasource.VideoFileStoreDataSource;
+import com.example.fiap.videoslice.domain.exception.ApplicationException;
+import com.example.fiap.videoslice.domain.processor.VideoFileStoreDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,7 +9,9 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.S3Exception;
 
 import java.io.File;
 import java.net.URI;
@@ -33,22 +36,29 @@ public class AwsS3Api implements VideoFileStoreDataSource {
     }
 
     @Override
-    public String saveFile(File file) {
+    public String saveFile(File file) throws ApplicationException {
+        String framesFilePath;
 
-        S3Client s3 = S3Client.builder()
-                .region(Region.of(Region.US_EAST_1.toString()))
-                .endpointOverride(URI.create(s3Endpoint))
+        try {
+            S3Client s3 = S3Client.builder()
+                    .region(Region.of(Region.US_EAST_1.toString()))
+                    .endpointOverride(URI.create(s3Endpoint))
 //                .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKeyId, secretAccessKey)))
-                .build();
+                    .build();
 
-        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-                .bucket(bucketName)
-                .key(file.getName())
-                .build();
+            PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(file.getName())
+                    .build();
 
-        s3.putObject(putObjectRequest, file.toPath());
+            s3.putObject(putObjectRequest, file.toPath());
 
-        String framesFilePath = getBucketFullPath() + "/" + file.getName();
+            framesFilePath = getBucketFullPath() + "/" + file.getName();
+
+        } catch (S3Exception e) {
+            throw new ApplicationException("Error uploading the file to the S3 bucket");
+        }
+
         return framesFilePath;
     }
 
@@ -66,5 +76,29 @@ public class AwsS3Api implements VideoFileStoreDataSource {
         }
 
         return bucketFullPath;
+    }
+
+    @Override
+    public void deleteFile(String filePath) {
+        S3Client s3 = S3Client.builder()
+                .region(Region.of(Region.US_EAST_1.toString()))
+                .endpointOverride(URI.create(s3Endpoint))
+//                .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKeyId, secretAccessKey)))
+                .build();
+
+        String fileName = extractFileNameFromPath(filePath);
+
+        DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
+                .bucket(bucketName)
+                .key(fileName)
+                .build();
+
+        s3.deleteObject(deleteObjectRequest);
+
+        LOGGER.info("File {} deleted from bucket {}", fileName, bucketName);
+    }
+
+    private String extractFileNameFromPath(String filePath) {
+        return filePath.substring(filePath.lastIndexOf('/') + 1);
     }
 }

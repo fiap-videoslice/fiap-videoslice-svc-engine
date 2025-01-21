@@ -1,4 +1,4 @@
-package com.example.fiap.videoslice.adapters.datasource;
+package com.example.fiap.videoslice.adapters.processor;
 
 import com.example.fiap.videoslice.domain.entities.Video;
 import com.example.fiap.videoslice.domain.exception.ApplicationException;
@@ -14,15 +14,16 @@ import org.mockito.MockitoAnnotations;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.zip.ZipOutputStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-class VideoSliceRepositoryImplTest {
+class VideoSliceProcessorImplTest {
 
     @InjectMocks
-    private VideoSliceRepositoryImpl videoSliceRepository;
+    private VideoSliceProcessorImpl videoSliceRepository;
 
     @Mock
     private FFmpegFrameGrabber frameGrabber;
@@ -39,7 +40,14 @@ class VideoSliceRepositoryImplTest {
     void testVideoSlice() throws ApplicationException, IOException {
         // Arrange
         Video video = mock(Video.class);
-        when(video.getPath()).thenReturn("d:\\tmp\\video1.mp4");
+        String classpathRoot = Paths.get("").toAbsolutePath().getParent().getParent().toString();
+
+        String osName = System.getProperty("os.name");
+        if (osName.startsWith("Windows")) {
+            when(video.getPath()).thenReturn(classpathRoot + "\\addittional-test-files\\video.mp4");
+        } else {
+            when(video.getPath()).thenReturn(classpathRoot + "/addittional-test-files/video.mp4");
+        }
 
         // Act
         File result = videoSliceRepository.videoSlice(video, 5);
@@ -62,7 +70,18 @@ class VideoSliceRepositoryImplTest {
     @Test
     void testExtractFrames() throws ApplicationException, IOException {
         // Arrange
-        String videoFilePath = "d:\\tmp\\video1.mp4";
+//        String videoFilePath = "d:\\tmp\\video1.mp4";
+        String videoFilePath;
+
+        String classpathRoot = Paths.get("").toAbsolutePath().getParent().getParent().toString();
+
+        String osName = System.getProperty("os.name");
+        if (osName.startsWith("Windows")) {
+            videoFilePath = classpathRoot + "\\addittional-test-files\\video.mp4";
+        } else {
+            videoFilePath = classpathRoot + "/addittional-test-files/video.mp4";
+        }
+
         int periodInSeconds = 5;
         ZipOutputStream zipOutputStream = mock(ZipOutputStream.class);
         when(frameGrabber.grabImage()).thenReturn(mock(Frame.class), (Frame) null);

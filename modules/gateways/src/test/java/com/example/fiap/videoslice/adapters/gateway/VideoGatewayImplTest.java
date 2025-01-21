@@ -1,6 +1,6 @@
-package com.example.fiap.videoslice.adapters.datagateway;//import static org.junit.jupiter.api.Assertions.*;
+package com.example.fiap.videoslice.adapters.gateway;//import static org.junit.jupiter.api.Assertions.*;
 
-//import com.example.fiap.videoslice.domain.datasource.VideoDataSource;
+//import com.example.fiap.videoslice.domain.datasource.VideoProcessor;
 //import com.example.fiap.videoslice.domain.datasource.VideoFileStoreDataSource;
 //import com.example.fiap.videoslice.domain.exception.ApplicationException;
 //import org.junit.jupiter.api.BeforeEach;
@@ -19,19 +19,19 @@ package com.example.fiap.videoslice.adapters.datagateway;//import static org.jun
 //class VideoGatewayImplTest {
 //
 ////    private VideoGateway videoGateway;
-////    private final VideoDataSource videoDataSource = mock(VideoDataSource.class);
+////    private final VideoProcessor videoProcessor = mock(VideoProcessor.class);
 ////    private final VideoFileStoreDataSource videoFileStoreDataSource = mock(VideoFileStoreDataSource.class);
 ////
 ////    @BeforeEach
 ////    void setUp() {
-////        videoGateway = new VideoGatewayImpl(videoDataSource, videoFileStoreDataSource);
+////        videoGateway = new VideoGatewayImpl(videoProcessor, videoFileStoreDataSource);
 ////    }
 //
 //
 //}
 
-import com.example.fiap.videoslice.domain.datasource.VideoDataSource;
-import com.example.fiap.videoslice.domain.datasource.VideoFileStoreDataSource;
+import com.example.fiap.videoslice.domain.processor.VideoProcessor;
+import com.example.fiap.videoslice.domain.processor.VideoFileStoreDataSource;
 import com.example.fiap.videoslice.domain.entities.Video;
 import com.example.fiap.videoslice.domain.exception.ApplicationException;
 import org.junit.jupiter.api.BeforeEach;
@@ -48,7 +48,7 @@ import static org.mockito.Mockito.*;
 class VideoGatewayImplTest {
 
     @Mock
-    private VideoDataSource videoDataSource;
+    private VideoProcessor videoProcessor;
 
     @Mock
     private VideoFileStoreDataSource videoFileStoreDataSource;
@@ -66,27 +66,27 @@ class VideoGatewayImplTest {
         Video video = mock(Video.class);
         File mockedFile = mock(File.class);
 
-        when(videoDataSource.videoSlice(video, 10)).thenReturn(mockedFile);
+        when(videoProcessor.videoSlice(video, 10)).thenReturn(mockedFile);
 
         File result = videoGateway.videoSlice(video, 10);
 
         assertNotNull(result);
         assertEquals(mockedFile, result);
-        verify(videoDataSource, times(1)).videoSlice(video, 10);
+        verify(videoProcessor, times(1)).videoSlice(video, 10);
     }
 
     @Test
     void testVideoSliceThrowsApplicationException() throws ApplicationException {
         Video video = mock(Video.class);
 
-        when(videoDataSource.videoSlice(video, 10)).thenThrow(ApplicationException.class);
+        when(videoProcessor.videoSlice(video, 10)).thenThrow(ApplicationException.class);
 
         assertThrows(ApplicationException.class, () -> videoGateway.videoSlice(video, 10));
-        verify(videoDataSource, times(1)).videoSlice(video, 10);
+        verify(videoProcessor, times(1)).videoSlice(video, 10);
     }
 
     @Test
-    void testSaveFile() {
+    void testSaveFile() throws ApplicationException {
         File file = mock(File.class);
         String expectedPath = "path/to/saved/file";
 

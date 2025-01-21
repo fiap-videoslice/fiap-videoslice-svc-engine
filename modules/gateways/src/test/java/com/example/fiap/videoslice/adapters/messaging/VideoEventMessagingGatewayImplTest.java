@@ -1,6 +1,7 @@
 package com.example.fiap.videoslice.adapters.messaging;
 
 import com.example.fiap.videoslice.domain.entities.Video;
+import com.example.fiap.videoslice.domain.exception.ApplicationException;
 import com.example.fiap.videoslice.domain.messaging.VideoStatusEventMessaging;
 import com.example.fiap.videoslice.domain.valueobjects.StatusVideo;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,7 +26,7 @@ public class VideoEventMessagingGatewayImplTest {
 
 
     @Test
-    void notificarStatusVideo() {
+    void notificarStatusVideo() throws ApplicationException {
 
         Video video = Video.newVideo("21", StatusVideo.TO_BE_PROCESSED, "/tmp/myvideo/myvideo123.mp4");
 
@@ -35,7 +36,7 @@ public class VideoEventMessagingGatewayImplTest {
     }
 
     @Test
-    void testNotifyErrorProcessingTheVideo() {
+    void testNotifyErrorProcessingTheVideo() throws ApplicationException {
         // Arrange
         String errorMessage = "Error processing video";
 

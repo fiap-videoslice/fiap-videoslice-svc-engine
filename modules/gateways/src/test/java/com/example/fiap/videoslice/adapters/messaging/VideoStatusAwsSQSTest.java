@@ -1,6 +1,7 @@
 package com.example.fiap.videoslice.adapters.messaging;
 
 import com.example.fiap.videoslice.domain.entities.Video;
+import com.example.fiap.videoslice.domain.exception.ApplicationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -24,7 +25,7 @@ class VideoStatusAwsSQSTest {
     }
 
     @Test
-    void testUpdateStatusVideo() {
+    void testUpdateStatusVideo() throws ApplicationException {
         // Arrange
         Video video = mock(Video.class);
         when(video.getVideoJson()).thenReturn("{\"id\":\"1\",\"status\":\"PROCESSED_OK\"}");
@@ -39,7 +40,7 @@ class VideoStatusAwsSQSTest {
     }
 
     @Test
-    void testNotifyErrorProcessingTheVideo() {
+    void testNotifyErrorProcessingTheVideo() throws ApplicationException {
         // Arrange
         String errorMessage = "Error processing video";
         when(awsSQSApi.getVideoStatusQueueName()).thenReturn("videoStatusQueue");

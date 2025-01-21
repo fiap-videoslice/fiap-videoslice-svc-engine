@@ -1,6 +1,6 @@
-package com.example.fiap.videoslice.adapters.datasource;
+package com.example.fiap.videoslice.adapters.processor;
 
-import com.example.fiap.videoslice.domain.datasource.VideoDataSource;
+import com.example.fiap.videoslice.domain.processor.VideoProcessor;
 import com.example.fiap.videoslice.domain.entities.Video;
 import com.example.fiap.videoslice.domain.exception.ApplicationException;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-public class VideoSliceRepositoryImpl implements VideoDataSource {
+public class VideoSliceProcessorImpl implements VideoProcessor {
 
     @Override
     public File videoSlice(Video video, int periodInSeconds) throws ApplicationException {
