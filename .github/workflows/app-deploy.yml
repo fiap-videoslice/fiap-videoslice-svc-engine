@@ -23,7 +23,7 @@ jobs:
       - name: Prepare app directory
         run: |
           mkdir ./docker/temp_libs
-          cp ./modules/web-app/target/svc-catalogo-webapi-*.jar ./docker/temp_libs/
+          cp ./modules/web-app/target/svc-engine-webapi-*.jar ./docker/temp_libs/
           cp ./modules/web-app/target/lib/* ./docker/temp_libs/
       - name: Archive app directory
         uses: actions/upload-artifact@v4
@@ -63,28 +63,6 @@ jobs:
           push: true
           tags: ${{ vars.DOCKERHUB_USERNAME }}/${{ vars.DOCKER_IMAGE_BASE_NAME }}:latest,${{ vars.DOCKERHUB_USERNAME }}/${{ vars.DOCKER_IMAGE_BASE_NAME }}:${{env.PROJECT_VERSION}}
 
-  setup-database:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: "Configure AWS Credentials"
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-region: us-east-1
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
-
-      - name: Get database URL
-        id: get-db-url
-        run: ./deploy/utils/get-database-url.sh ${{vars.DB_INSTANCE_IDENTIFIER}} >> $GITHUB_OUTPUT
-      - name: Create application database
-        run: |
-          ./deploy/utils/create-app-database.sh "${{steps.get-db-url.outputs.DB_URL}}" "${{vars.MAIN_DATABASE_NAME}}" \
-             "${{vars.DATABASE_ADM_USER}}" "${{secrets.DATABASE_PASSWORD}}" \
-             "${{vars.APP_DATABASE_NAME}}" "${{vars.DATABASE_APP_USER}}" "${{secrets.DATABASE_APP_PASSWORD}}"
-
   prepare-k8s-aws-dependencies:
     needs:
       - mvn-install-with-libs
@@ -105,20 +83,9 @@ jobs:
 
       - name: Verify EKS cluster
         run: ./deploy/utils/check-cluster-status.sh ${{vars.EKS_CLUSTER_NAME}}
-      - name: Get database URL
-        id: get-db-url
-        run: ./deploy/utils/get-database-url.sh ${{vars.DB_INSTANCE_IDENTIFIER}} >> $GITHUB_OUTPUT
       - name: Get API Gateway info
         id: get-apigw-info
         run: ./deploy/utils/get-external-api-info.sh ${{vars.API_GATEWAY_NAME}} >> $GITHUB_OUTPUT
-
-      - name: Prepare kubernetes files
-        run: |
-          cat ./deploy/k8s/db/db-configs-cloud-template.yml \
-             | sed "s/{DB_URL}/${{ steps.get-db-url.outputs.DB_URL }}/" \
-             | sed "s/{DB_NAME}/${{vars.APP_DATABASE_NAME}}/" \
-             | sed "s/{DB_USER}/${{vars.DATABASE_APP_USER}}/" \
-             | sed "s/{DB_PASS}/${{secrets.DATABASE_APP_PASSWORD}}/" > ./kube-db-configs.yml
 
       - name: Update image in App Deployment
         run: |
@@ -135,7 +102,6 @@ jobs:
   deploy-k8s:
     needs:
       - prepare-k8s-aws-dependencies
-      - setup-database
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
