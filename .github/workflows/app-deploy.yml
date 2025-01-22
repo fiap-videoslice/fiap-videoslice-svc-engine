@@ -28,7 +28,7 @@ jobs:
           ls -la ./modules/web-app/target/
           ls -la ./modules/web-app/target/lib/
           cp ./modules/web-app/target/svc-engine-webapi-*.jar ./docker/temp_libs/ 
-          cp ./modules/web-app/target/lib/* ./docker/temp_libs/
+          cp ./modules/web-app/target/dependency/* ./docker/temp_libs/
       - name: Archive app directory
         uses: actions/upload-artifact@v4
         with:
