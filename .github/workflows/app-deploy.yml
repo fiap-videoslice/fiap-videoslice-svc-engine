@@ -24,7 +24,6 @@ jobs:
         run: mvn install dependency:copy-dependencies
       - name: Prepare app directory
         run: | 
-          mkdir ./docker/temp_libs
           ls -la ./modules/web-app/target/
           ls -la ./modules/web-app/target/lib/
           cp ./modules/web-app/target/svc-engine-webapi-*.jar ./docker/temp_libs/ 
