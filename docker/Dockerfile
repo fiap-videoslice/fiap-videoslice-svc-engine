@@ -21,13 +21,15 @@ RUN chmod a+x /app/entrypoint.sh
 
 USER apprunner
 
-ENV videoslice.integration.aws.region=us-east-1
 ENV videoslice.integration.sqs.sqsEndpoint=http://localhost:4566
+ENV videoslice.integration.s3.s3Endpoint=http://localhost:4566
+ENV videosliceapi.integration.aws.overrideAwsEndpoint=http://localhost:4566
 ENV videoslice.integration.sqs.videosToBeProcessedQueueName=videosToBeProcessed
 ENV videoslice.integration.sqs.videosToBeProcessedQueueUrl=http://localhost:4566/000000000000/videosToBeProcessed
 ENV videoslice.integration.sqs.videoStatusQueueName=videoStatus
 ENV videoslice.integration.sqs.videoStatusQueueUrl=http://localhost:4566/000000000000/videoStatus
+ENV videoslice.integration.s3.bucketName=videoslice-job-requests
 
-EXPOSE 8090
+EXPOSE 8091
 
 CMD ["/app/entrypoint.sh"]

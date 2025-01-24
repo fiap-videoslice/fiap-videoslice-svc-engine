@@ -1,71 +1,80 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: archburgers-app-deployment
+  name: videoslice-svc-engine-deployment
 spec:
   selector:
     matchLabels:
-      app: archburgers-app
+      app: videoslice-svc-engine
   replicas: 1
   template:
     metadata:
       labels:
-        app: archburgers-app
+        app: videoslice-svc-engine
     spec:
       containers:
-        - name: archburgers-app-container
-          image: dockerhubalancarvalho/architect-burgers-pagamentos:0.0.7
+        - name: videoslice-engine-app-container
+          image: dockerhubalancarvalho/fiap-videoslice-svc-engine:0.0.1
           ports:
-            - containerPort: 8090
+            - containerPort: 8091
           env:
-
-            - name: "archburgers.integration.aws.region"
+            - name: "videoslice.integration.sqs.sqsEndpoint"
               valueFrom:
                 configMapKeyRef:
-                  name: "archburgers-aws-config"
-                  key: "archburgers.integration.aws.region"
-            - name: "archburgers.integration.sqs.pagamentosEmAbertoQueueName"
+                  name: "videoslice-aws-config"
+                  key: "videoslice.integration.sqs.sqsEndpoint"
+            - name: "videoslice.integration.s3.s3Endpoint"
               valueFrom:
                 configMapKeyRef:
-                  name: "archburgers-aws-config"
-                  key: "archburgers.integration.sqs.pagamentosEmAbertoQueueName"
-            - name: "archburgers.integration.sqs.pagamentosEmAbertoQueueUrl"
+                  name: "videoslice-aws-config"
+                  key: "videoslice.integration.s3.s3Endpoint"
+            - name: "videosliceapi.integration.aws.overrideAwsEndpoint"
               valueFrom:
                 configMapKeyRef:
-                  name: "archburgers-aws-config"
-                  key: "archburgers.integration.sqs.pagamentosEmAbertoQueueUrl"
-            - name: "archburgers.integration.sqs.pagamentosConcluidosQueueName"
+                  name: "videoslice-aws-config"
+                  key: "videosliceapi.integration.aws.overrideAwsEndpoint"
+            - name: "videoslice.integration.sqs.videosToBeProcessedQueueName"
               valueFrom:
                 configMapKeyRef:
-                  name: "archburgers-aws-config"
-                  key: "archburgers.integration.sqs.pagamentosConcluidosQueueName"
-            - name: "archburgers.integration.sqs.pagamentosConcluidosQueueUrl"
+                  name: "videoslice-aws-config"
+                  key: "videoslice.integration.sqs.videosToBeProcessedQueueName"
+            - name: "videoslice.integration.sqs.videosToBeProcessedQueueUrl"
               valueFrom:
                 configMapKeyRef:
-                  name: "archburgers-aws-config"
-                  key: "archburgers.integration.sqs.pagamentosConcluidosQueueUrl"
-            - name: "archburgers.integration.sqs.sqsEndpoint"
+                  name: "videoslice-aws-config"
+                  key: "videoslice.integration.sqs.videosToBeProcessedQueueUrl"
+            - name: "videoslice.integration.sqs.videoStatusQueueName"
               valueFrom:
                 configMapKeyRef:
-                  name: "archburgers-aws-config"
-                  key: "archburgers.integration.sqs.sqsEndpoint"
+                  name: "videoslice-aws-config"
+                  key: "videoslice.integration.sqs.videoStatusQueueName"
+            - name: "videoslice.integration.sqs.videoStatusQueueUrl"
+              valueFrom:
+                configMapKeyRef:
+                  name: "videoslice-aws-config"
+                  key: "videoslice.integration.sqs.videoStatusQueueUrl"
+            - name: "videoslice.integration.s3.bucketName"
+              valueFrom:
+                configMapKeyRef:
+                  name: "videoslice-aws-config"
+                  key: "videoslice.integration.s3.bucketName"
 
             # Needs to be passed via env var - Pod cannot assume role in AwsAcademy
             - name: "AWS_ACCESS_KEY_ID"
               valueFrom:
                 configMapKeyRef:
-                  name: "archburgers-aws-config"
-                  key: "archburgers.integration.aws.AWS_ACCESS_KEY_ID"
+                  name: "videoslice-aws-config"
+                  key: "videoslice.integration.aws.AWS_ACCESS_KEY_ID"
             - name: "AWS_SECRET_ACCESS_KEY"
               valueFrom:
                 configMapKeyRef:
-                  name: "archburgers-aws-config"
-                  key: "archburgers.integration.aws.AWS_SECRET_ACCESS_KEY"
+                  name: "videoslice-aws-config"
+                  key: "videoslice.integration.aws.AWS_SECRET_ACCESS_KEY"
             - name: "AWS_SESSION_TOKEN"
               valueFrom:
                 configMapKeyRef:
-                  name: "archburgers-aws-config"
-                  key: "archburgers.integration.aws.AWS_SESSION_TOKEN"
+                  name: "videoslice-aws-config"
+                  key: "videoslice.integration.aws.AWS_SESSION_TOKEN"
           resources:
             requests:
               cpu: 250m

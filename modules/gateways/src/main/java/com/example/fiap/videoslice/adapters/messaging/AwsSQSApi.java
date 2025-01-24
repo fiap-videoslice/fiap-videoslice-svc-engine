@@ -1,5 +1,6 @@
 package com.example.fiap.videoslice.adapters.messaging;
 
+import com.example.fiap.videoslice.domain.exception.ApplicationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +40,7 @@ public class AwsSQSApi {
         this.videoStatusQueueUrl = Objects.requireNonNull(videoStatusQueueUrl, "videoslice.integration.sqs.videoStatusQueueUrl not set");
     }
 
-    public void sendMessage(String queueName, String queueUrl, String message) {
+    public void sendMessage(String queueName, String queueUrl, String message) throws ApplicationException {
         try {
             SqsClient sqsClient = SqsClient.builder()
                     .region(Region.US_EAST_1)
@@ -65,7 +66,8 @@ public class AwsSQSApi {
 
         } catch (SqsException e) {
             LOGGER.error(e.getMessage());
-            System.exit(1);
+            throw new ApplicationException("Error sending message to the queue");
+//            System.exit(1);
         }
     }
 

@@ -74,7 +74,12 @@
             <artifactId>json</artifactId>
             <version>20240303</version>
         </dependency>
-
+        <dependency>
+            <groupId>uk.org.lidalia</groupId>
+            <artifactId>slf4j-test</artifactId>
+            <version>1.2.0</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <dependencyManagement>
@@ -118,10 +123,15 @@
 
                     <environmentVariables>
                         <videoslice.integration.sqs.sqsEndpoint>http://localhost:4566</videoslice.integration.sqs.sqsEndpoint>
-                        <videoslice.integration.sqs.videosToBeProcessedQueueName>videosToBeProcessed</videoslice.integration.sqs.videosToBeProcessedQueueName>
-                        <videoslice.integration.sqs.videosToBeProcessedQueueUrl>http://localhost:4566/000000000000/videosToBeProcessed</videoslice.integration.sqs.videosToBeProcessedQueueUrl>
-                        <videoslice.integration.sqs.videoStatusQueueName>videoStatus</videoslice.integration.sqs.videoStatusQueueName>
-                        <videoslice.integration.sqs.videoStatusQueueUrl>http://localhost:4566/000000000000/videoStatus</videoslice.integration.sqs.videoStatusQueueUrl>
+                        <videoslice.integration.s3.s3Endpoint>http://localhost:4566</videoslice.integration.s3.s3Endpoint>
+                        <videosliceapi.integration.aws.overrideAwsEndpoint>http://localhost:4566</videosliceapi.integration.aws.overrideAwsEndpoint>
+
+                        <videoslice.integration.sqs.videosToBeProcessedQueueName>videoslice_job_requests</videoslice.integration.sqs.videosToBeProcessedQueueName>
+                        <videoslice.integration.sqs.videosToBeProcessedQueueUrl>http://localhost:4566/000000000000/videoslice_job_requests</videoslice.integration.sqs.videosToBeProcessedQueueUrl>
+                        <videoslice.integration.sqs.videoStatusQueueName>videoslice_job_status</videoslice.integration.sqs.videoStatusQueueName>
+                        <videoslice.integration.sqs.videoStatusQueueUrl>http://localhost:4566/000000000000/videoslice_job_status</videoslice.integration.sqs.videoStatusQueueUrl>
+
+                        <videoslice.integration.s3.bucketName>videoslice-job-requests</videoslice.integration.s3.bucketName>
                     </environmentVariables>
                 </configuration>
             </plugin>

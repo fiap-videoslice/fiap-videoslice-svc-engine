@@ -1,12 +1,12 @@
 package com.example.fiap.videoslice.di;
 
-import com.example.fiap.videoslice.adapters.datagateway.VideoGatewayImpl;
-import com.example.fiap.videoslice.adapters.datasource.VideoSliceRepositoryImpl;
+import com.example.fiap.videoslice.adapters.gateway.VideoGatewayImpl;
+import com.example.fiap.videoslice.adapters.processor.VideoSliceProcessorImpl;
 import com.example.fiap.videoslice.adapters.messaging.VideoEventMessagingGatewayImpl;
-import com.example.fiap.videoslice.domain.datagateway.VideoEventMessagingGateway;
-import com.example.fiap.videoslice.domain.datagateway.VideoGateway;
-import com.example.fiap.videoslice.domain.datasource.VideoDataSource;
-import com.example.fiap.videoslice.domain.datasource.VideoFileStoreDataSource;
+import com.example.fiap.videoslice.domain.gateway.VideoEventMessagingGateway;
+import com.example.fiap.videoslice.domain.gateway.VideoGateway;
+import com.example.fiap.videoslice.domain.processor.VideoProcessor;
+import com.example.fiap.videoslice.domain.processor.VideoFileStoreDataSource;
 import com.example.fiap.videoslice.domain.messaging.VideoStatusEventMessaging;
 import com.example.fiap.videoslice.domain.usecases.VideoUseCases;
 import org.springframework.context.annotation.Bean;
@@ -16,13 +16,13 @@ import org.springframework.context.annotation.Configuration;
 public class DomainServiceBeans {
 
     @Bean
-    public VideoDataSource getDataSource() {
-        return new VideoSliceRepositoryImpl();
+    public VideoProcessor getDataSource() {
+        return new VideoSliceProcessorImpl();
     }
 
     @Bean
-    public VideoGateway getVideoGateway(VideoDataSource videoDataSource, VideoFileStoreDataSource videoFileStoreDataSource) {
-        return new VideoGatewayImpl(videoDataSource, videoFileStoreDataSource);
+    public VideoGateway getVideoGateway(VideoProcessor videoProcessor, VideoFileStoreDataSource videoFileStoreDataSource) {
+        return new VideoGatewayImpl(videoProcessor, videoFileStoreDataSource);
     }
 
     @Bean
