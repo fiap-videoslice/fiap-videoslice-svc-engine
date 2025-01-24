@@ -94,11 +94,16 @@ jobs:
         id: create-sqs-videos-tbp
         run: |
           chmod +x ./deploy/utils/create-sqs-queue.sh
-          ./deploy/utils/create-sqs-queue.sh ${{vars.VIDEOSLICE_VIDEOS_TO_BE_PROCESSED_QUEUE_NAME}} 
+          ./deploy/utils/create-sqs-queue.sh ${{vars.VIDEOSLICE_VIDEOS_TO_BE_PROCESSED_QUEUE_NAME}}
+          echo "QUEUE=$QUEUE_URL" >> $GITHUB_OUTPUT
+          echo "SQS_ENDPOINT=$SQS_ENDPOINT" >> $GITHUB_OUTPUT
       
       - name: Create SQS Queue VIDEOS_STATUS
         id: create-sqs-video-status
-        run: ./deploy/utils/create-sqs-queue.sh ${{vars.VIDEOSLICE_VIDEOS_STATUS_QUEUE_NAME}} >> $GITHUB_OUTPUT
+        run: |
+          ./deploy/utils/create-sqs-queue.sh ${{vars.VIDEOSLICE_VIDEOS_STATUS_QUEUE_NAME}} >> $GITHUB_OUTPUT
+          echo "QUEUE=$QUEUE_URL" >> $GITHUB_OUTPUT
+          echo "SQS_ENDPOINT=$SQS_ENDPOINT" >> $GITHUB_OUTPUT
 
       - name: Verify EKS cluster
         run: |
