@@ -68,7 +68,7 @@ class AwsS3ApiTest {
         String result = awsS3Api.getBucketFullPath();
 
         // Assert
-        assertEquals("http://s3.local", result);
+        assertEquals("http://s3.local/my-bucket", result);
     }
 
     @Test
