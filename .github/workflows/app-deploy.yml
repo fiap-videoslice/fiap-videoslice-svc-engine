@@ -85,16 +85,25 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
 
+      - name: Create S3 Bucket 
+        run: |
+          chmod +x ./deploy/utils/create-s3-bucket.sh
+          ./deploy/utils/create-s3-bucket.sh  ${{vars.VIDEO_PROCESS_REQUEST_BUCKET_NAME }}
+
       - name: Create SQS Queue Videos To Be Processed
         id: create-sqs-videos-tbp
-        run: ./deploy/utils/create-sqs-queue.sh ${{vars.VIDEOSLICE_VIDEOS_TO_BE_PROCESSED_QUEUE_NAME}} >> $GITHUB_OUTPUT
+        run: |
+          chmod +x ./deploy/utils/create-sqs-queue.sh
+          ./deploy/utils/create-sqs-queue.sh ${{vars.VIDEOSLICE_VIDEOS_TO_BE_PROCESSED_QUEUE_NAME}} >> $GITHUB_OUTPUT
       
       - name: Create SQS Queue VIDEOS_STATUS
         id: create-sqs-video-status
         run: ./deploy/utils/create-sqs-queue.sh ${{vars.VIDEOSLICE_VIDEOS_STATUS_QUEUE_NAME}} >> $GITHUB_OUTPUT
 
       - name: Verify EKS cluster
-        run: ./deploy/utils/check-cluster-status.sh ${{vars.EKS_CLUSTER_NAME}}
+        run: |
+          chmod +x ./deploy/utils/check-cluster-status.sh
+          ./deploy/utils/check-cluster-status.sh ${{vars.EKS_CLUSTER_NAME}}
 
       - name: Get API Gateway info
         id: get-apigw-info
