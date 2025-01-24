@@ -101,7 +101,7 @@ jobs:
       - name: Create SQS Queue VIDEOS_STATUS
         id: create-sqs-video-status
         run: |
-          ./deploy/utils/create-sqs-queue.sh ${{vars.VIDEOSLICE_VIDEOS_STATUS_QUEUE_NAME}} >> $GITHUB_OUTPUT
+          ./deploy/utils/create-sqs-queue.sh ${{vars.VIDEOSLICE_VIDEOS_STATUS_QUEUE_NAME}}
           echo "QUEUE=$QUEUE_URL" >> $GITHUB_OUTPUT
           echo "SQS_ENDPOINT=$SQS_ENDPOINT" >> $GITHUB_OUTPUT
 
