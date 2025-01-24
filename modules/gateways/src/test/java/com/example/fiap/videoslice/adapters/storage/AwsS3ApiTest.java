@@ -26,7 +26,7 @@ class AwsS3ApiTest {
         environment = mock(Environment.class);
         s3Client = mock(S3Client.class);
         awsS3Api = mock(AwsS3Api.class);
-        when(environment.getProperty("videoslice.integration.sqs.s3Endpoint")).thenReturn("https://s3.local");
+        when(environment.getProperty("videoslice.integration.s3.s3Endpoint")).thenReturn("https://s3.local");
         when(environment.getProperty("videoslice.integration.s3.bucketName")).thenReturn("my-bucket");
 
     }
@@ -61,7 +61,7 @@ class AwsS3ApiTest {
     @Test
     void testGetBucketFullPathWithoutHttps() {
         // Arrange
-        when(environment.getProperty("videoslice.integration.sqs.s3Endpoint")).thenReturn("http://s3.local");
+        when(environment.getProperty("videoslice.integration.s3.s3Endpoint")).thenReturn("http://s3.local");
         awsS3Api = new AwsS3Api(environment);
 
         // Act
@@ -74,11 +74,11 @@ class AwsS3ApiTest {
     @Test
     void testConstructorWithNullS3Endpoint() {
         // Arrange
-        when(environment.getProperty("videoslice.integration.sqs.s3Endpoint")).thenReturn(null);
+        when(environment.getProperty("videoslice.integration.s3.s3Endpoint")).thenReturn(null);
 
         // Act & Assert
         Exception exception = assertThrows(NullPointerException.class, () -> new AwsS3Api(environment));
-        assertEquals("videoslice.integration.sqs.s3Endpoint not set", exception.getMessage());
+        assertEquals("videoslice.integration.s3.s3Endpoint not set", exception.getMessage());
     }
 
     @Test

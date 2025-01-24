@@ -7,8 +7,8 @@ data:
   "videoslice.integration.s3.s3Endpoint": "{S3_ENDPOINT}"
   "videosliceapi.integration.aws.overrideAwsEndpoint": "{AWS_ENDPOINT}"
 
-  "videoslice.integration.sqs.videosToBeProcessedQueueName": "{VIDEOSLICE_VIDEOS_TO-BE_PROCESSED_QUEUE_NAME}"
-  "videoslice.integration.sqs.videosToBeProcessedQueueUrl": "{VIDEOSLICE_VIDEOS_TO-BE_PROCESSED_QUEUE_URL}"
+  "videoslice.integration.sqs.videosToBeProcessedQueueName": "{VIDEOSLICE_VIDEOS_TO_BE_PROCESSED_QUEUE_NAME}"
+  "videoslice.integration.sqs.videosToBeProcessedQueueUrl": "{VIDEOSLICE_VIDEOS_TO_BE_PROCESSED_QUEUE_URL}"
   "videoslice.integration.sqs.videoStatusQueueName": "{VIDEOSLICE_VIDEOS_STATUS_QUEUE_NAME}"
   "videoslice.integration.sqs.videoStatusQueueUrl": "{VIDEOSLICE_VIDEOS_STATUS_QUEUE_URL}"
 
