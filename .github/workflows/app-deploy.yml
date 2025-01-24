@@ -113,6 +113,7 @@ jobs:
       - name: Get API Gateway info
         id: get-apigw-info
         run: |
+          chmod +x ./deploy/utils/get-external-api-info.sh
           ./deploy/utils/get-external-api-info.sh ${{vars.API_GATEWAY_NAME}} 
           echo "API_ID=$API_ID" >> $GITHUB_OUTPUT
           echo "API_URL=$API_URL" >> $GITHUB_OUTPUT
