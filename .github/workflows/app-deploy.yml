@@ -112,8 +112,11 @@ jobs:
 
       - name: Get API Gateway info
         id: get-apigw-info
-        run: ./deploy/utils/get-external-api-info.sh ${{vars.API_GATEWAY_NAME}} >> $GITHUB_OUTPUT
-
+        run: |
+          ./deploy/utils/get-external-api-info.sh ${{vars.API_GATEWAY_NAME}} 
+          echo "API_ID=$API_ID" >> $GITHUB_OUTPUT
+          echo "API_URL=$API_URL" >> $GITHUB_OUTPUT
+          
       - name: Prepare AWS
         run: |
           cat ./deploy/k8s/app/aws-configs-template.yml \
