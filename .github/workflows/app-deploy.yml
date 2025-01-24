@@ -94,7 +94,7 @@ jobs:
         id: create-sqs-videos-tbp
         run: |
           chmod +x ./deploy/utils/create-sqs-queue.sh
-          ./deploy/utils/create-sqs-queue.sh ${{vars.VIDEOSLICE_VIDEOS_TO_BE_PROCESSED_QUEUE_NAME}} >> "$GITHUB_OUTPUT"
+          ./deploy/utils/create-sqs-queue.sh ${{vars.VIDEOSLICE_VIDEOS_TO_BE_PROCESSED_QUEUE_NAME}} 
       
       - name: Create SQS Queue VIDEOS_STATUS
         id: create-sqs-video-status
