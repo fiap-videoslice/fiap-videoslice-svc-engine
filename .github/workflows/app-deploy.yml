@@ -96,13 +96,13 @@ jobs:
         run: |
           chmod +x ./deploy/utils/create-sqs-queue.sh           
           QUEUE_URL=$(./deploy/utils/create-sqs-queue.sh ${{vars.VIDEOSLICE_VIDEOS_TO_BE_PROCESSED_QUEUE_NAME}})
-          echo "QUEUE=$QUEUE_URL" >> $GITHUB_OUTPUT
+          echo "$QUEUE_URL" >> $GITHUB_OUTPUT
       
       - name: Create SQS Queue VIDEOS_STATUS
         id: create-sqs-video-status
         run: |
           QUEUE_URL=$(./deploy/utils/create-sqs-queue.sh ${{vars.VIDEOSLICE_VIDEOS_STATUS_QUEUE_NAME}})
-          echo "QUEUE=$QUEUE_URL" >> $GITHUB_OUTPUT          
+          echo "$QUEUE_URL" >> $GITHUB_OUTPUT          
 
       - name: Verify EKS cluster
         run: |
@@ -126,11 +126,11 @@ jobs:
              | sed "s|{VIDEOSLICE_VIDEOS_BUCKET_NAME}|$(echo -n '${{vars.VIDEO_PROCESS_REQUEST_BUCKET_NAME}}' | tr -d '\n')|" \
              | sed "s|{VIDEOSLICE_VIDEOS_TO_BE_PROCESSED_QUEUE_NAME}|$(echo -n '${{vars.VIDEOSLICE_VIDEOS_TO_BE_PROCESSED_QUEUE_NAME}}' | tr -d '\n')|" \
              | sed "s|{VIDEOSLICE_VIDEOS_STATUS_QUEUE_NAME}|$(echo -n '${{vars.VIDEOSLICE_VIDEOS_STATUS_QUEUE_NAME}}' | tr -d '\n')|" \
-             | sed "s|{VIDEOSLICE_VIDEOS_TO_BE_PROCESSED_QUEUE_URL}|${{ steps.create-sqs-videos-tbp.outputs.QUEUE }}|" \
-             | sed "s|{VIDEOSLICE_VIDEOS_STATUS_QUEUE_URL}|${{ steps.create-sqs-video-status.outputs.QUEUE }}|" \
-             | sed "s|{SQS_ENDPOINT}|${{ steps.create-sqs-videos-tbp.outputs.SQS_ENDPOINT }}|" \
-             | sed "s|{S3_ENDPOINT}|${{ steps.create-s3-videos-bucket.outputs.S3ENDPOINT }}|" \
-             | sed "s|{AWS_ENDPOINT}|$(echo -n 'https://${{vars.VIDEO_PROCESS_REQUEST_BUCKET_NAME}}.s3.us-east-1.amazonaws.com' | tr -d '\n')|" \
+             | sed "s|{VIDEOSLICE_VIDEOS_TO_BE_PROCESSED_QUEUE_URL}|${{ steps.create-sqs-videos-tbp.outputs.QUEUE }}| tr -d '\n')|" \
+             | sed "s|{VIDEOSLICE_VIDEOS_STATUS_QUEUE_URL}|${{ steps.create-sqs-video-status.outputs.QUEUE }}| tr -d '\n')|" \
+             | sed "s|{SQS_ENDPOINT}|${{ steps.create-sqs-videos-tbp.outputs.SQS_ENDPOINT }}| tr -d '\n')|" \
+             | sed "s|{S3_ENDPOINT}|$(echo -n 'https://${{vars.VIDEO_PROCESS_REQUEST_BUCKET_NAME}}.s3.us-east-1.amazonaws.com' | tr -d '\n')|" \
+             | sed "s|{AWS_ENDPOINT}|${{ steps.create-sqs-videos-tbp.outputs.SQS_ENDPOINT }}|" \
              | sed "s/{REGION}/us-east-1/" > ./kube-aws-configs.yml
 
       - name: Update image in App Deployment
