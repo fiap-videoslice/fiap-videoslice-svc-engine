@@ -28,14 +28,16 @@ if [ -z "$queue_url" ]; then
   fi
 fi
 
-endpoint=$(echo "$queue_url" | sed 's/\(https:\/\/.*aws\.com\).*/\1/')
+endpoint=$(echo -n "$queue_url" | sed 's/\(https:\/\/.*aws\.com\).*/\1/')
 
 # Imprime a URL da fila
 #echo "QUEUE=$queue_url"
 #echo "SQS_ENDPOINT=$endpoint"
 
-QUEUE="${queue_url//[\",]}"
+QUEUE_STEP1="${queue_url//[\",]}"
+QUEUE_STEP2=echo -n ${queue_url}
+
 SQS_ENDPOINT="${endpoint//[\",]}"
 
-echo "QUEUE=$QUEUE"
+echo "QUEUE=$QUEUE_STEP2"
 echo "SQS_ENDPOINT=$SQS_ENDPOINT"
