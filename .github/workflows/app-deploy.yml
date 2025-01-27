@@ -89,8 +89,7 @@ jobs:
         id: create-s3-videos-bucket
         run: |
           chmod +x ./deploy/utils/create-s3-bucket.sh
-          S3_ENDPOINT=$(./deploy/utils/create-s3-bucket.sh  ${{vars.VIDEO_PROCESS_REQUEST_BUCKET_NAME }})
-          echo "S3ENDPOINT=$S3_ENDPOINT" >> $GITHUB_OUTPUT
+          ./deploy/utils/create-s3-bucket.sh  ${{vars.VIDEO_PROCESS_REQUEST_BUCKET_NAME }}
 
       - name: Create SQS Queue Videos To Be Processed
         id: create-sqs-videos-tbp
@@ -131,7 +130,7 @@ jobs:
              | sed "s|{VIDEOSLICE_VIDEOS_STATUS_QUEUE_URL}|${{ steps.create-sqs-video-status.outputs.QUEUE }}|" \
              | sed "s|{SQS_ENDPOINT}|${{ steps.create-sqs-videos-tbp.outputs.SQS_ENDPOINT }}|" \
              | sed "s|{S3_ENDPOINT}|${{ steps.create-s3-videos-bucket.outputs.S3ENDPOINT }}|" \
-             | sed "s|{AWS_ENDPOINT}|${{ steps.create-sqs-videos-tbp.outputs.SQS_ENDPOINT }}|" \
+             | sed "s|{AWS_ENDPOINT}|$(echo -n 'https://${{vars.VIDEO_PROCESS_REQUEST_BUCKET_NAME}}.s3.us-east-1.amazonaws.com' | tr -d '\n')|" \
              | sed "s/{REGION}/us-east-1/" > ./kube-aws-configs.yml
 
       - name: Update image in App Deployment
