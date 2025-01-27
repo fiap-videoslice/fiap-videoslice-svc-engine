@@ -31,5 +31,11 @@ fi
 endpoint=$(echo "$queue_url" | sed 's/\(https:\/\/.*aws\.com\).*/\1/')
 
 # Imprime a URL da fila
-echo "QUEUE=$queue_url"
-echo "SQS_ENDPOINT=$endpoint"
+#echo "QUEUE=$queue_url"
+#echo "SQS_ENDPOINT=$endpoint"
+
+QUEUE="${queue_url//[\",]}"
+SQS_ENDPOINT="${endpoint//[\",]}"
+
+echo "QUEUE=$QUEUE"
+echo "SQS_ENDPOINT=$SQS_ENDPOINT"
