@@ -88,7 +88,8 @@ jobs:
       - name: Create S3 Bucket 
         run: |
           chmod +x ./deploy/utils/create-s3-bucket.sh
-          ./deploy/utils/create-s3-bucket.sh  ${{vars.VIDEO_PROCESS_REQUEST_BUCKET_NAME }}
+          S3_ENDPOINT=$(./deploy/utils/create-s3-bucket.sh  ${{vars.VIDEO_PROCESS_REQUEST_BUCKET_NAME }})
+          echo "S3_ENDPOINT=$S3_ENDPOINT" >> $GITHUB_OUTPUT
 
       - name: Create SQS Queue Videos To Be Processed
         id: create-sqs-videos-tbp
