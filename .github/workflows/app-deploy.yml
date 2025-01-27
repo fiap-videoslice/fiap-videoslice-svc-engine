@@ -128,7 +128,7 @@ jobs:
              | sed "s|{VIDEOSLICE_VIDEOS_STATUS_QUEUE_NAME}|$(echo -n '${{vars.VIDEOSLICE_VIDEOS_STATUS_QUEUE_NAME}}' |" \
              | sed "s|{VIDEOSLICE_VIDEOS_TO_BE_PROCESSED_QUEUE_URL}|${{ steps.create-sqs-videos-tbp.outputs.QUEUE }}|" \
              | sed "s|{VIDEOSLICE_VIDEOS_STATUS_QUEUE_URL}|${{ steps.create-sqs-video-status.outputs.QUEUE }}|" \
-             | sed "s|{SQS_ENDPOINT}|${{ steps.create-sqs-videos-tbp.outputs.SQS_ENDPOINT }}| sed -e 's/^[[:space:]]*//'" \
+             | sed "s|{SQS_ENDPOINT}|$(echo -n '${{ steps.create-sqs-videos-tbp.outputs.SQS_ENDPOINT }}'|" \
              | sed "s|{S3_ENDPOINT}|$(echo -n 'https://${{vars.VIDEO_PROCESS_REQUEST_BUCKET_NAME}}.s3.us-east-1.amazonaws.com' | tr -d '\n')|" \
              | sed "s|{AWS_ENDPOINT}|${{ steps.create-sqs-videos-tbp.outputs.SQS_ENDPOINT }}|" \
              | sed "s/{REGION}/us-east-1/" > ./kube-aws-configs.yml
