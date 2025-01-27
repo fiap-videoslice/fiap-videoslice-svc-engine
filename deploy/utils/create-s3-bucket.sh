@@ -18,3 +18,9 @@ fi
 echo "Bucket $bucket_name will be created"
 
 aws s3 mb s3://$bucket_name
+
+endpoint="https://$bucket_name.s3.us-east-1.amazonaws.com"
+
+S3_ENDPOINT="${endpoint//[\",]}"
+
+echo "S3_ENDPOINT=$S3_ENDPOINT"
