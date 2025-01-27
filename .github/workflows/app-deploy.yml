@@ -85,11 +85,12 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
 
-      - name: Create S3 Bucket 
+      - name: Create S3 Bucket
+        id: create-s3-videos-bucket
         run: |
           chmod +x ./deploy/utils/create-s3-bucket.sh
           S3_ENDPOINT=$(./deploy/utils/create-s3-bucket.sh  ${{vars.VIDEO_PROCESS_REQUEST_BUCKET_NAME }})
-          echo "S3_ENDPOINT=$S3_ENDPOINT" >> $GITHUB_OUTPUT
+          echo "S3ENDPOINT=$S3_ENDPOINT" >> $GITHUB_OUTPUT
 
       - name: Create SQS Queue Videos To Be Processed
         id: create-sqs-videos-tbp
@@ -129,7 +130,7 @@ jobs:
              | sed "s|{VIDEOSLICE_VIDEOS_TO_BE_PROCESSED_QUEUE_URL}|${{ steps.create-sqs-videos-tbp.outputs.QUEUE }}|" \
              | sed "s|{VIDEOSLICE_VIDEOS_STATUS_QUEUE_URL}|${{ steps.create-sqs-video-status.outputs.QUEUE }}|" \
              | sed "s|{SQS_ENDPOINT}|${{ steps.create-sqs-videos-tbp.outputs.SQS_ENDPOINT }}|" \
-             | sed "s|{S3_ENDPOINT}|${{ steps.create-sqs-videos-tbp.outputs.SQS_ENDPOINT }}|" \
+             | sed "s|{S3_ENDPOINT}|${{ steps.create-s3-videos-bucket.outputs.S3ENDPOINT }}|" \
              | sed "s|{AWS_ENDPOINT}|${{ steps.create-sqs-videos-tbp.outputs.SQS_ENDPOINT }}|" \
              | sed "s/{REGION}/us-east-1/" > ./kube-aws-configs.yml
 
