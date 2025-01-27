@@ -124,8 +124,8 @@ jobs:
              | sed "s|{SECRET_ACCESS_KEY}|$(echo -n '${{secrets.AWS_SECRET_ACCESS_KEY}}' | tr -d '\n')|" \
              | sed "s|{SESSION_TOKEN}|$(echo -n '${{secrets.AWS_SESSION_TOKEN}}' | tr -d '\n')|" \
              | sed "s|{VIDEOSLICE_VIDEOS_BUCKET_NAME}|$(echo -n '${{vars.VIDEO_PROCESS_REQUEST_BUCKET_NAME}}' | tr -d '\n')|" \
-             | sed "s|{VIDEOSLICE_VIDEOS_TO_BE_PROCESSED_QUEUE_NAME}|$(echo -n '${{vars.VIDEOSLICE_VIDEOS_TO_BE_PROCESSED_QUEUE_NAME}}' |" \
-             | sed "s|{VIDEOSLICE_VIDEOS_STATUS_QUEUE_NAME}|$(echo -n '${{vars.VIDEOSLICE_VIDEOS_STATUS_QUEUE_NAME}}' |" \
+             | sed "s|{VIDEOSLICE_VIDEOS_TO_BE_PROCESSED_QUEUE_NAME}|${{vars.VIDEOSLICE_VIDEOS_TO_BE_PROCESSED_QUEUE_NAME}} |" \
+             | sed "s|{VIDEOSLICE_VIDEOS_STATUS_QUEUE_NAME}|${{vars.VIDEOSLICE_VIDEOS_STATUS_QUEUE_NAME}} |" \
              | sed "s|{VIDEOSLICE_VIDEOS_TO_BE_PROCESSED_QUEUE_URL}|${{ steps.create-sqs-videos-tbp.outputs.QUEUE }}|" \
              | sed "s|{VIDEOSLICE_VIDEOS_STATUS_QUEUE_URL}|${{ steps.create-sqs-video-status.outputs.QUEUE }}|" \
              | sed "s|{SQS_ENDPOINT}|$(echo -n '${{ steps.create-sqs-videos-tbp.outputs.SQS_ENDPOINT }}'|" \
