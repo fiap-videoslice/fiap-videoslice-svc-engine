@@ -19,7 +19,7 @@ if [ -z "$queue_url" ]; then
   aws sqs create-queue --queue-name "$queue_name"
 
   # Obtém a URL da fila recém-criada
-  queue_url=$(aws sqs get-queue-url --queue-name "$queue_name" --query QueueUrl)
+  queue_url=$(aws sqs get-queue-url --queue-name "$queue_name" --query QueueUrl | tr -d '[:space:]')
 
   # Verifica se a fila foi criada com sucesso
   if [ -z "$queue_url" ]; then
@@ -28,7 +28,7 @@ if [ -z "$queue_url" ]; then
   fi
 fi
 
-endpoint=$(echo "$queue_url" | sed 's/\(https:\/\/.*aws\.com\).*/\1/')
+endpoint=$(echo "$queue_url" | sed 's/\(https:\/\/.*aws\.com\).*/\1/' | tr -d '[:space:]')
 
 # Imprime a URL da fila
 #echo "QUEUE=$queue_url"
