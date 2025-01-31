@@ -9,7 +9,11 @@
 #
 FROM openjdk:21-jdk
 
-RUN adduser apprunner -D
+# comando alpine
+#RUN adduser apprunner -D
+
+#comando debian
+RUN useradd -m apprunner
 
 RUN mkdir /app
 
