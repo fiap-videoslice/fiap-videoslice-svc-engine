@@ -7,7 +7,7 @@
 # mkdir ./docker/temp_libs && cp ./modules/web-app/target/architect-burgers-webapi-*.jar ./docker/temp_libs/ && cp ./modules/web-app/target/lib/* ./docker/temp_libs/
 #
 #
-FROM eclipse-temurin:23-jdk-alpine
+FROM openjdk:21-jdk
 
 RUN adduser apprunner -D
 
