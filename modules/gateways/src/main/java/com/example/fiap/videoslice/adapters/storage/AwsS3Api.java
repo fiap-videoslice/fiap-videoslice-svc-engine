@@ -20,7 +20,9 @@ import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Objects;
@@ -192,7 +194,7 @@ public class AwsS3Api implements VideoFileStoreDataSource {
 
             // Gerar a URL pré-assinada
             PresignedPutObjectRequest presignedRequest = s3Presigner.presignPutObject(r -> r
-                    .signatureDuration(Duration.ofMinutes(10))
+                    .signatureDuration(Duration.ofMinutes(120))
                     .putObjectRequest(putObjectRequest));
 
             System.out.println("AwsS3Api - pre putObject");
@@ -202,7 +204,15 @@ public class AwsS3Api implements VideoFileStoreDataSource {
 
             System.out.println("Presigned URL generated: {} - " + presignedUrl);
 
-            return presignedUrl;
+
+            // Fazer o upload do arquivo usando a URL pré-assinada
+            uploadFileUsingPresignedUrl(presignedUrl, file);
+
+            framesFilePath = getBucketFullPath() + "/" + file.getName();
+            LOGGER.info("File uploaded to {}", framesFilePath);
+            return framesFilePath;
+
+//            return presignedUrl;
 
             //Original
 //            PutObjectResponse response = s3Client.putObject(putObjectRequest, requestBody);
@@ -217,6 +227,12 @@ public class AwsS3Api implements VideoFileStoreDataSource {
 //            System.out.println("AwsS3Api - getBucketFullPath() - " + getBucketFullPath());
 //            framesFilePath = getBucketFullPath() + "/" + file.getName();
 //            System.out.println("AwsS3Api - framesFilePath - " + framesFilePath);
+        } catch (IOException e) {
+            System.out.println("AwsS3Api - erro - " + e.toString());
+            System.out.println("AwsS3Api - erro - " + e);
+            System.out.println("AwsS3Api - erro - " + e.getMessage());
+            System.out.println("AwsS3Api - erro - " + e.getStackTrace().toString());
+            throw new ApplicationException("Error uploading the file to the S3 bucket");
 
         } catch (S3Exception e) {
             System.out.println("AwsS3Api - erro - " + e.toString());
@@ -228,6 +244,26 @@ public class AwsS3Api implements VideoFileStoreDataSource {
 
 //        return framesFilePath;
     }
+
+
+    private void uploadFileUsingPresignedUrl(String presignedUrl, File file) throws IOException {
+        // Usar HttpURLConnection ou HttpClient para fazer o upload do arquivo usando a URL pré-assinada
+        java.net.URL url = new java.net.URL(presignedUrl);
+        java.net.HttpURLConnection connection = (java.net.HttpURLConnection) url.openConnection();
+        connection.setDoOutput(true);
+        connection.setRequestMethod("PUT");
+        connection.setRequestProperty("Content-Type", "application/zip");
+
+        try (java.io.OutputStream outputStream = connection.getOutputStream()) {
+            Files.copy(file.toPath(), outputStream);
+        }
+
+        int responseCode = connection.getResponseCode();
+        if (responseCode != 200) {
+            throw new IOException("Failed to upload file: HTTP response code " + responseCode);
+        }
+    }
+
 
     public String getBucketFullPath() {
 
