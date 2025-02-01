@@ -52,7 +52,12 @@ public class AwsS3Api implements VideoFileStoreDataSource {
         String framesFilePath;
 
         try {
-
+            System.out.println("AwsS3Api - saveFile");
+            System.out.println("AwsS3Api bucketName - " + bucketName);
+            System.out.println("AwsS3Api file.getName() - " + file.getName());
+            System.out.println("AwsS3Api file.toPath() - " + file.toPath());
+            
+            
             LOGGER.info("Saving file {} with {} bytes to bucket {}");
 
             s3Client.putObject(
@@ -75,9 +80,12 @@ public class AwsS3Api implements VideoFileStoreDataSource {
 //
 //            s3.putObject(putObjectRequest, file.toPath());
 
+            System.out.println("AwsS3Api - getBucketFullPath() - " + getBucketFullPath());
             framesFilePath = getBucketFullPath() + "/" + file.getName();
-
+            System.out.println("AwsS3Api - framesFilePath - " + framesFilePath);
+            
         } catch (S3Exception e) {
+            System.out.println("AwsS3Api - erro - " + e.toString());
             throw new ApplicationException("Error uploading the file to the S3 bucket");
         }
 
