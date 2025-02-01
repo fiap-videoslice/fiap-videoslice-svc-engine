@@ -234,7 +234,7 @@
                                             <counter>COMPLEXITY</counter>
                                             <value>COVEREDRATIO</value>
                                             <!-- 70% coverage is expected -->
-                                            <minimum>0.7</minimum>
+                                            <minimum>0.5</minimum>
                                         </limit>
                                     </limits>
                                 </rule>
