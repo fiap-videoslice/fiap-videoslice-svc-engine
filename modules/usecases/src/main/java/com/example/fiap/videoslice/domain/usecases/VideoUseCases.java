@@ -48,7 +48,7 @@ public class VideoUseCases {
 
         try {
             System.out.println("Fase 2 - setVideoFrameFilePath");
-            Video videoSuccess = video.setVideoFrameFilePath(uploadedFilePath).setVideoStatusToProcessedSuccess();
+            Video videoSuccess = video.setVideoFrameFilePath(file.getName()).setVideoStatusToProcessedSuccess();
             System.out.println("Fase 2 - updateStatusVideo");
             updateStatusVideo(videoSuccess);
 
