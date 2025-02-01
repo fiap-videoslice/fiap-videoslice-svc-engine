@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.net.URI;
 import java.nio.ByteBuffer;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -51,144 +52,158 @@ public class AwsS3Api implements VideoFileStoreDataSource {
     }
 
 
-    /**
-     * Performs a multipart upload to Amazon S3 using the provided S3 client.
-     *
-     * @param fileParam the path to the file to be uploaded
-     */
-    public String saveFile(File fileParam) throws ApplicationException {
-//    public void multipartUploadWithS3Client(String filePath) {
-        String filePath = fileParam.getPath();
-        String framesFilePath;
-        try {
-
-            System.out.println("AwsS3Api - CreateMultipartUploadResponse - 1");
-            // Initiate the multipart upload.
-            CreateMultipartUploadResponse createMultipartUploadResponse = s3Client.createMultipartUpload(b -> b
-                    .bucket(bucketName)
-                    .key(fileParam.getName()));
-
-            System.out.println("AwsS3Api - CreateMultipartUploadResponse - 2");
-            String uploadId = createMultipartUploadResponse.uploadId();
-
-            // Upload the parts of the file.
-            int partNumber = 1;
-            List<CompletedPart> completedParts = new ArrayList<>();
-            ByteBuffer bb = ByteBuffer.allocate(1024 * 1024 * 5); // 5 MB byte buffer
-
-            System.out.println("AwsS3Api - CreateMultipartUploadResponse - 3");
-            try (RandomAccessFile file = new RandomAccessFile(filePath, "r")) {
-                long fileSize = file.length();
-                long position = 0;
-                System.out.println("AwsS3Api - CreateMultipartUploadResponse - 4 fileSize - " + fileSize);
-                while (position < fileSize) {
-                    file.seek(position);
-                    System.out.println("AwsS3Api - while - " + position);
-                    long read = file.getChannel().read(bb);
-
-                    System.out.println("AwsS3Api - b4 bb.flip()");
-                    bb.flip(); // Swap position and limit before reading from the buffer.
-
-                    System.out.println("AwsS3Api - b4 uploadPartRequest");
-                    UploadPartRequest uploadPartRequest = UploadPartRequest.builder()
-                            .bucket(bucketName)
-                            .key("key" + position)
-                            .uploadId(uploadId)
-                            .partNumber(partNumber)
-                            .build();
-
-                    System.out.println("AwsS3Api - b4 UploadPartResponse");
-                    UploadPartResponse partResponse = s3Client.uploadPart(
-                            uploadPartRequest,
-                            RequestBody.fromByteBuffer(bb));
-
-                    System.out.println("AwsS3Api - b4 CompletedPart");
-                    CompletedPart part = CompletedPart.builder()
-                            .partNumber(partNumber)
-                            .eTag(partResponse.eTag())
-                            .build();
-
-                    System.out.println("AwsS3Api - b4 add");
-                    completedParts.add(part);
-
-                    System.out.println("AwsS3Api - b4 clear");
-                    bb.clear();
-                    position += read;
-                    partNumber++;
-                }
-
-            } catch (IOException e) {
-                System.out.println("AwsS3Api - erro - " + e.toString());
-                throw new ApplicationException("Error uploading the file to the S3 bucket");
-            }
-
-            System.out.println("AwsS3Api - b4 s3Client.completeMultipartUpload");
-            // Complete the multipart upload.
-            s3Client.completeMultipartUpload(b -> b
-                    .bucket(bucketName)
-                    .key(fileParam.getName())
-                    .uploadId(uploadId)
-                    .multipartUpload(CompletedMultipartUpload.builder().parts(completedParts).build()));
-
-            System.out.println("AwsS3Api - getBucketFullPath() - " + getBucketFullPath());
-            framesFilePath = getBucketFullPath() + "/" + fileParam.getName();
-            System.out.println("AwsS3Api - framesFilePath - " + framesFilePath);
-
-            return framesFilePath;
-
-        }catch(S3Exception e){
-            System.out.println("AwsS3Api - erro - " + e.toString());
-            throw new ApplicationException("Error uploading the file to the S3 bucket");
-        }
-    }
-
-
-//    @Override
-//    public String saveFile(File file) throws ApplicationException {
+//    /**
+//     * Performs a multipart upload to Amazon S3 using the provided S3 client.
+//     *
+//     * @param fileParam the path to the file to be uploaded
+//     */
+//    public String saveFileMultiPart(File fileParam) throws ApplicationException {
+////    public void multipartUploadWithS3Client(String filePath) {
+//        String filePath = fileParam.getPath();
 //        String framesFilePath;
-//
 //        try {
-//            System.out.println("AwsS3Api - saveFile");
-//            System.out.println("AwsS3Api bucketName - " + bucketName);
-//            System.out.println("AwsS3Api file.getName() - " + file.getName());
-//            System.out.println("AwsS3Api file.toPath() - " + file.toPath());
 //
-//            Path path = file.toPath();
-//
-//            System.out.println("AwsS3Api - pre request body");
-//            RequestBody requestBody = RequestBody.fromFile(path);
-//
-//            LOGGER.info("Saving file {} with {} bytes to bucket {}");
-//
-//            System.out.println("AwsS3Api - pre putObjectRequest");
-//
-//            PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+//            System.out.println("AwsS3Api - CreateMultipartUploadResponse - 1");
+//            // Initiate the multipart upload.
+//            CreateMultipartUploadResponse createMultipartUploadResponse = s3Client.createMultipartUpload(b -> b
 //                    .bucket(bucketName)
-//                    .key(file.getName())
-//                    .contentLength(file.length())
+//                    .key(fileParam.getName()));
+//
+//            CreateMultipartUploadRequest createMultipartUploadRequest = CreateMultipartUploadRequest.builder()
+//                    .bucket(bucketName)
+//                    .key(fileParam.getName())
 //                    .build();
-//            System.out.println("AwsS3Api - pre putObject");
 //
-//            PutObjectResponse response = s3Client.putObject(putObjectRequest, requestBody);
+//            System.out.println("AwsS3Api - CreateMultipartUploadResponse - 2");
+//            String uploadId = createMultipartUploadResponse.uploadId();
 //
+//            // Upload the parts of the file.
+//            int partNumber = 1;
+//            List<CompletedPart> completedParts = new ArrayList<>();
+//            ByteBuffer bb = ByteBuffer.allocate(1024 * 1024 * 5); // 5 MB byte buffer
 //
-////            s3Client.putObject(
-////                    PutObjectRequest.builder()
-////                            .bucket(bucketName)
-////                            .key(file.getName())
-////                            .build(), file.toPath());
+//            System.out.println("AwsS3Api - CreateMultipartUploadResponse - 3");
+//            try (RandomAccessFile file = new RandomAccessFile(filePath, "r")) {
+//                long fileSize = file.length();
+//                long position = 0;
+//                System.out.println("AwsS3Api - CreateMultipartUploadResponse - 4 fileSize - " + fileSize);
+//                while (position < fileSize) {
+//                    file.seek(position);
+//                    System.out.println("AwsS3Api - while - " + position);
+//                    long read = file.getChannel().read(bb);
+//
+//                    System.out.println("AwsS3Api - b4 bb.flip()");
+//                    bb.flip(); // Swap position and limit before reading from the buffer.
+//
+//                    System.out.println("AwsS3Api - b4 uploadPartRequest");
+//                    UploadPartRequest uploadPartRequest = UploadPartRequest.builder()
+//                            .bucket(bucketName)
+//                            .key("key" + position)
+//                            .uploadId(uploadId)
+//                            .partNumber(partNumber)
+//                            .build();
+//
+//                    System.out.println("AwsS3Api - b4 UploadPartResponse");
+//                    UploadPartResponse partResponse = s3Client.uploadPart(
+//                            uploadPartRequest,
+//                            RequestBody.fromByteBuffer(bb));
+//
+//                    System.out.println("AwsS3Api - b4 CompletedPart");
+//                    CompletedPart part = CompletedPart.builder()
+//                            .partNumber(partNumber)
+//                            .eTag(partResponse.eTag())
+//                            .build();
+//
+//                    System.out.println("AwsS3Api - b4 add");
+//                    completedParts.add(part);
+//
+//                    System.out.println("AwsS3Api - b4 clear");
+//                    bb.clear();
+//                    position += read;
+//                    partNumber++;
+//                }
+//
+//            } catch (IOException e) {
+//                System.out.println("AwsS3Api - erro - " + e.toString());
+//                throw new ApplicationException("Error uploading the file to the S3 bucket");
+//            }
+//
+//            System.out.println("AwsS3Api - b4 s3Client.completeMultipartUpload");
+//            // Complete the multipart upload.
+//            s3Client.completeMultipartUpload(b -> b
+//                    .bucket(bucketName)
+//                    .key(fileParam.getName())
+//                    .uploadId(uploadId)
+//                    .multipartUpload(CompletedMultipartUpload.builder().parts(completedParts).build()));
 //
 //            System.out.println("AwsS3Api - getBucketFullPath() - " + getBucketFullPath());
-//            framesFilePath = getBucketFullPath() + "/" + file.getName();
+//            framesFilePath = getBucketFullPath() + "/" + fileParam.getName();
 //            System.out.println("AwsS3Api - framesFilePath - " + framesFilePath);
 //
-//        } catch (S3Exception e) {
+//            return framesFilePath;
+//
+//        }catch(S3Exception e){
 //            System.out.println("AwsS3Api - erro - " + e.toString());
 //            throw new ApplicationException("Error uploading the file to the S3 bucket");
 //        }
-//
-//        return framesFilePath;
 //    }
+
+
+    @Override
+    public String saveFile(File file) throws ApplicationException {
+        String framesFilePath;
+
+        try {
+            System.out.println("AwsS3Api - saveFile");
+            System.out.println("AwsS3Api bucketName - " + bucketName);
+            System.out.println("AwsS3Api file.getName() - " + file.getName());
+            System.out.println("AwsS3Api file.toPath() - " + file.toPath());
+
+
+            if (file.exists()) {
+                System.out.println("O arquivo existe.");
+            } else {
+                System.out.println("O arquivo não existe.");
+            }
+
+
+            Path path = file.toPath();
+
+            System.out.println("AwsS3Api - pre request body");
+            RequestBody requestBody = RequestBody.fromFile(path);
+
+            LOGGER.info("Saving file {} with {} bytes to bucket {}");
+
+            System.out.println("AwsS3Api - pre putObjectRequest");
+
+            PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(file.getName())
+                    .contentType("application/zip")
+                    .contentLength(file.length())
+                    .build();
+            System.out.println("AwsS3Api - pre putObject");
+
+            PutObjectResponse response = s3Client.putObject(putObjectRequest, requestBody);
+
+
+//            s3Client.putObject(
+//                    PutObjectRequest.builder()
+//                            .bucket(bucketName)
+//                            .key(file.getName())
+//                            .build(), file.toPath());
+
+            System.out.println("AwsS3Api - getBucketFullPath() - " + getBucketFullPath());
+            framesFilePath = getBucketFullPath() + "/" + file.getName();
+            System.out.println("AwsS3Api - framesFilePath - " + framesFilePath);
+
+        } catch (S3Exception e) {
+            System.out.println("AwsS3Api - erro - " + e.toString());
+            throw new ApplicationException("Error uploading the file to the S3 bucket");
+        }
+
+        return framesFilePath;
+    }
 
     public String getBucketFullPath() {
 
