@@ -67,16 +67,17 @@ public class AwsS3Api implements VideoFileStoreDataSource {
             LOGGER.info("Saving file {} with {} bytes to bucket {}");
 
             System.out.println("AwsS3Api - pre putObjectRequest");
-            
+
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                     .bucket(bucketName)
                     .key(file.getName())
+                    .contentLength(file.length())
                     .build();
             System.out.println("AwsS3Api - pre putObject");
-            
+
             PutObjectResponse response = s3Client.putObject(putObjectRequest, requestBody);
-            
-            
+
+
 //            s3Client.putObject(
 //                    PutObjectRequest.builder()
 //                            .bucket(bucketName)
