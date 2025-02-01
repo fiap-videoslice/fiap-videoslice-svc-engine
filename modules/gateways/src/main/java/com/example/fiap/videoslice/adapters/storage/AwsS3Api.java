@@ -14,10 +14,12 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.S3ClientBuilder;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 import software.amazon.awssdk.services.s3.model.S3Exception;
 
 import java.io.File;
 import java.net.URI;
+import java.nio.file.Path;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -56,34 +58,35 @@ public class AwsS3Api implements VideoFileStoreDataSource {
             System.out.println("AwsS3Api bucketName - " + bucketName);
             System.out.println("AwsS3Api file.getName() - " + file.getName());
             System.out.println("AwsS3Api file.toPath() - " + file.toPath());
-            
-            
+
+            Path path = file.toPath();
+
+            System.out.println("AwsS3Api - pre request body");
+            RequestBody requestBody = RequestBody.fromFile(path);
+
             LOGGER.info("Saving file {} with {} bytes to bucket {}");
 
-            s3Client.putObject(
-                    PutObjectRequest.builder()
-                            .bucket(bucketName)
-                            .key(file.getName())
-                            .build(), file.toPath());
-
-
-//            S3Client s3 = S3Client.builder()
-//                    .region(Region.of(Region.US_EAST_1.toString()))
-////                    .endpointOverride(URI.create(s3Endpoint))
-////                .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKeyId, secretAccessKey)))
-//                    .build();
-//
-//            PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-//                    .bucket(bucketName)
-//                    .key(file.getName())
-//                    .build();
-//
-//            s3.putObject(putObjectRequest, file.toPath());
+            System.out.println("AwsS3Api - pre putObjectRequest");
+            
+            PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(file.getName())
+                    .build();
+            System.out.println("AwsS3Api - pre putObject");
+            
+            PutObjectResponse response = s3Client.putObject(putObjectRequest, requestBody);
+            
+            
+//            s3Client.putObject(
+//                    PutObjectRequest.builder()
+//                            .bucket(bucketName)
+//                            .key(file.getName())
+//                            .build(), file.toPath());
 
             System.out.println("AwsS3Api - getBucketFullPath() - " + getBucketFullPath());
             framesFilePath = getBucketFullPath() + "/" + file.getName();
             System.out.println("AwsS3Api - framesFilePath - " + framesFilePath);
-            
+
         } catch (S3Exception e) {
             System.out.println("AwsS3Api - erro - " + e.toString());
             throw new ApplicationException("Error uploading the file to the S3 bucket");
