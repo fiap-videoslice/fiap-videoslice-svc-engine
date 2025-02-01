@@ -12,16 +12,17 @@ import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.S3ClientBuilder;
-import software.amazon.awssdk.services.s3.model.*;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.PutObjectResponse;
+import software.amazon.awssdk.services.s3.model.S3Exception;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.net.URI;
-import java.nio.ByteBuffer;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.Duration;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -33,6 +34,7 @@ public class AwsS3Api implements VideoFileStoreDataSource {
     private String s3Endpoint;
     private String bucketName;
     private S3Client s3Client;
+    private final S3Presigner s3Presigner;
 
     @Autowired
     public AwsS3Api(Environment environment) {
@@ -49,6 +51,10 @@ public class AwsS3Api implements VideoFileStoreDataSource {
         builder = AwsClientUtils.maybeOverrideEndpoint(builder, environment);
 
         s3Client = builder.build();
+
+        this.s3Presigner = S3Presigner.builder()
+                .region(Region.US_EAST_1)
+                .build();
     }
 
 
@@ -182,9 +188,24 @@ public class AwsS3Api implements VideoFileStoreDataSource {
                     .contentType("application/zip")
                     .contentLength(file.length())
                     .build();
+            System.out.println("AwsS3Api - pre presignedRequest");
+
+            // Gerar a URL pré-assinada
+            PresignedPutObjectRequest presignedRequest = s3Presigner.presignPutObject(r -> r
+                    .signatureDuration(Duration.ofMinutes(10))
+                    .putObjectRequest(putObjectRequest));
+
             System.out.println("AwsS3Api - pre putObject");
 
-            PutObjectResponse response = s3Client.putObject(putObjectRequest, requestBody);
+            // Obter a URL pré-assinada
+            String presignedUrl = presignedRequest.url().toString();
+
+            System.out.println("Presigned URL generated: {} - " + presignedUrl);
+
+            return presignedUrl;
+
+            //Original
+//            PutObjectResponse response = s3Client.putObject(putObjectRequest, requestBody);
 
 
 //            s3Client.putObject(
@@ -193,16 +214,19 @@ public class AwsS3Api implements VideoFileStoreDataSource {
 //                            .key(file.getName())
 //                            .build(), file.toPath());
 
-            System.out.println("AwsS3Api - getBucketFullPath() - " + getBucketFullPath());
-            framesFilePath = getBucketFullPath() + "/" + file.getName();
-            System.out.println("AwsS3Api - framesFilePath - " + framesFilePath);
+//            System.out.println("AwsS3Api - getBucketFullPath() - " + getBucketFullPath());
+//            framesFilePath = getBucketFullPath() + "/" + file.getName();
+//            System.out.println("AwsS3Api - framesFilePath - " + framesFilePath);
 
         } catch (S3Exception e) {
             System.out.println("AwsS3Api - erro - " + e.toString());
+            System.out.println("AwsS3Api - erro - " + e);
+            System.out.println("AwsS3Api - erro - " + e.getMessage());
+            System.out.println("AwsS3Api - erro - " + e.getStackTrace().toString());
             throw new ApplicationException("Error uploading the file to the S3 bucket");
         }
 
-        return framesFilePath;
+//        return framesFilePath;
     }
 
     public String getBucketFullPath() {
